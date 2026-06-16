@@ -1,5 +1,6 @@
 @import "tailwindcss" source(none);
 @source "../src";
+@source inline("bg-leaf/15 bg-ocean/15 bg-sun/15 bg-coral/15 text-leaf text-ocean text-sun text-coral bg-leaf bg-ocean bg-sun bg-coral");
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

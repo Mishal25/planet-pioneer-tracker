@@ -38,6 +38,12 @@ function CalculatorPage() {
   const breakdown = useMemo(() => calcDaily(input), [input]);
   const level = impactLevel(breakdown.total);
 
+  const generateFn = useServerFn(generateRecommendations);
+  const aiPlan = useMutation<RecommendationsResult, Error>({
+    mutationFn: () =>
+      generateFn({ data: { input, breakdown, history: weeklyHistory } }),
+  });
+
   const pieData = [
     { name: "Transport", value: +breakdown.transport.toFixed(2) },
     { name: "Energy",    value: +breakdown.energy.toFixed(2) },

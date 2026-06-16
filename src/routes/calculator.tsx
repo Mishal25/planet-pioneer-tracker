@@ -1,16 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Bike, Bus, Car, Lightbulb, Plane, Train, Trash2, Droplets, Utensils, ArrowRight, Sparkles } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Bike, Bus, Car, Lightbulb, Plane, Train, Trash2, Droplets, Utensils, ArrowRight, Sparkles, Wand2, Loader2, TrendingDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
 } from "recharts";
-import { calcDaily, impactLevel, recommendations, treesEquivalent, type Diet, type FootprintInput } from "@/lib/eco-data";
+import { calcDaily, impactLevel, recommendations, treesEquivalent, weeklyHistory, type Diet, type FootprintInput } from "@/lib/eco-data";
+import { generateRecommendations, type RecommendationsResult } from "@/lib/api/recommendations.functions";
 
 export const Route = createFileRoute("/calculator")({
   head: () => ({

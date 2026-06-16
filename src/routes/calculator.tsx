@@ -277,12 +277,6 @@ function CalculatorPage() {
     </div>
   );
 }
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Section({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle?: string; children: React.ReactNode }) {
   return (

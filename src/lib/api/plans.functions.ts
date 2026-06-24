@@ -23,7 +23,7 @@ const SavePlanSchema = z.object({
     waste: z.number(),
     total: z.number(),
   }),
-  input: z.record(z.string(), z.unknown()),
+  input: z.any(),
   totalKgPerDay: z.number(),
 });
 
@@ -32,10 +32,11 @@ export type SavedPlan = {
   summary: string;
   actions: z.infer<typeof ActionSchema>[];
   breakdown: z.infer<typeof SavePlanSchema>["breakdown"];
-  input: Record<string, unknown>;
+  input: any;
   total_kg_per_day: number;
   created_at: string;
 };
+
 
 export const savePlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

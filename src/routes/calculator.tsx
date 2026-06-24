@@ -298,8 +298,32 @@ function CalculatorPage() {
                       </div>
                     ))}
                   </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <Button
+                      onClick={() => saveMut.mutate()}
+                      disabled={saveMut.isPending || !!savedId}
+                      variant="outline"
+                      className="glass gap-2"
+                    >
+                      {saveMut.isPending ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
+                      ) : savedId ? (
+                        <><Check className="h-4 w-4 text-leaf" /> Saved to history</>
+                      ) : (
+                        <><Save className="h-4 w-4" /> Save to history</>
+                      )}
+                    </Button>
+                    {savedId && (
+                      <Link to="/history" className="text-sm text-primary hover:underline">View history →</Link>
+                    )}
+                    {saveMut.isError && !savedId && (
+                      <span className="text-xs text-coral">{saveMut.error?.message}</span>
+                    )}
+                  </div>
                 </div>
               )}
+
             </Card>
           </div>
         </div>

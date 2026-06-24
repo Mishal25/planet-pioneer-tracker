@@ -1,8 +1,9 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Moon, Sun, Menu, X, Leaf } from "lucide-react";
+import { Moon, Sun, Menu, X, Leaf, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -12,6 +13,7 @@ const nav = [
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/resources", label: "Resources" },
 ] as const;
+
 
 function useTheme() {
   const [dark, setDark] = useState(true);
@@ -36,6 +38,20 @@ export function SiteLayout() {
   const { dark, toggle } = useTheme();
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const router = useRouter();
+  const [email, setEmail] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        setEmail(session?.user.email ?? null);
+        router.invalidate();
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [router]);
+  const signOut = async () => { await supabase.auth.signOut(); };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-hero">
@@ -76,6 +92,20 @@ export function SiteLayout() {
             <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle theme">
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
+            {email ? (
+              <>
+                <Link to="/history" className="hidden sm:inline-flex">
+                  <Button variant="ghost" size="sm" className="gap-2"><User className="h-4 w-4" /> History</Button>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out" title={email}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth" className="hidden sm:block">
+                <Button variant="ghost" size="sm">Sign in</Button>
+              </Link>
+            )}
             <Link to="/calculator" className="hidden sm:block">
               <Button className="bg-gradient-primary text-primary-foreground hover:opacity-90 glow">Get Started</Button>
             </Link>
@@ -83,6 +113,7 @@ export function SiteLayout() {
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
+
         </div>
 
         {open && (

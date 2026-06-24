@@ -14,7 +14,10 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as CalculatorRouteImport } from './routes/calculator'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 
 const ResourcesRoute = ResourcesRouteImport.update({
   id: '/resources',
@@ -41,66 +44,96 @@ const CalculatorRoute = CalculatorRouteImport.update({
   path: '/calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/challenges': typeof ChallengesRoute
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/resources': typeof ResourcesRoute
+  '/history': typeof AuthenticatedHistoryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/challenges': typeof ChallengesRoute
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/resources': typeof ResourcesRoute
+  '/history': typeof AuthenticatedHistoryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/challenges': typeof ChallengesRoute
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/resources': typeof ResourcesRoute
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/calculator'
     | '/challenges'
     | '/dashboard'
     | '/leaderboard'
     | '/resources'
+    | '/history'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/calculator'
     | '/challenges'
     | '/dashboard'
     | '/leaderboard'
     | '/resources'
+    | '/history'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/calculator'
     | '/challenges'
     | '/dashboard'
     | '/leaderboard'
     | '/resources'
+    | '/_authenticated/history'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
   ChallengesRoute: typeof ChallengesRoute
   DashboardRoute: typeof DashboardRoute
@@ -145,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -152,11 +199,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
   ChallengesRoute: ChallengesRoute,
   DashboardRoute: DashboardRoute,

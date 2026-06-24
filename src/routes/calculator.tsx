@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bike, Bus, Car, Lightbulb, Plane, Train, Trash2, Droplets, Utensils, ArrowRight, Sparkles, Wand2, Loader2, TrendingDown } from "lucide-react";
+import { Bike, Bus, Car, Lightbulb, Plane, Train, Trash2, Droplets, Utensils, ArrowRight, Sparkles, Wand2, Loader2, TrendingDown, Save, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,9 @@ import {
 } from "recharts";
 import { calcDaily, impactLevel, recommendations, treesEquivalent, weeklyHistory, type Diet, type FootprintInput } from "@/lib/eco-data";
 import { generateRecommendations, type RecommendationsResult } from "@/lib/api/recommendations.functions";
+import { savePlan } from "@/lib/api/plans.functions";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/calculator")({
   head: () => ({
@@ -38,11 +41,38 @@ function CalculatorPage() {
   const breakdown = useMemo(() => calcDaily(input), [input]);
   const level = impactLevel(breakdown.total);
 
+  const navigate = useNavigate();
   const generateFn = useServerFn(generateRecommendations);
+  const saveFn = useServerFn(savePlan);
   const aiPlan = useMutation<RecommendationsResult, Error>({
     mutationFn: () =>
       generateFn({ data: { input, breakdown, history: weeklyHistory } }),
   });
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      if (!aiPlan.data) throw new Error("No plan to save");
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        navigate({ to: "/auth" });
+        throw new Error("Please sign in to save your plan.");
+      }
+      return saveFn({
+        data: {
+          summary: aiPlan.data.summary,
+          actions: aiPlan.data.actions,
+          breakdown,
+          input,
+          totalKgPerDay: breakdown.total,
+        },
+      });
+    },
+    onSuccess: (res) => setSavedId(res.id),
+  });
+
+  // Reset saved state when a new plan is generated
+  useEffect(() => { setSavedId(null); saveMut.reset(); }, [aiPlan.data]);
+
 
   const pieData = [
     { name: "Transport", value: +breakdown.transport.toFixed(2) },
@@ -268,8 +298,32 @@ function CalculatorPage() {
                       </div>
                     ))}
                   </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <Button
+                      onClick={() => saveMut.mutate()}
+                      disabled={saveMut.isPending || !!savedId}
+                      variant="outline"
+                      className="glass gap-2"
+                    >
+                      {saveMut.isPending ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
+                      ) : savedId ? (
+                        <><Check className="h-4 w-4 text-leaf" /> Saved to history</>
+                      ) : (
+                        <><Save className="h-4 w-4" /> Save to history</>
+                      )}
+                    </Button>
+                    {savedId && (
+                      <Link to="/history" className="text-sm text-primary hover:underline">View history →</Link>
+                    )}
+                    {saveMut.isError && !savedId && (
+                      <span className="text-xs text-coral">{saveMut.error?.message}</span>
+                    )}
+                  </div>
                 </div>
               )}
+
             </Card>
           </div>
         </div>

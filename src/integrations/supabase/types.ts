@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_action_plans: {
+        Row: {
+          actions: Json
+          breakdown: Json
+          created_at: string
+          id: string
+          input: Json
+          summary: string
+          total_kg_per_day: number
+          user_id: string
+        }
+        Insert: {
+          actions: Json
+          breakdown: Json
+          created_at?: string
+          id?: string
+          input: Json
+          summary: string
+          total_kg_per_day: number
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          breakdown?: Json
+          created_at?: string
+          id?: string
+          input?: Json
+          summary?: string
+          total_kg_per_day?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
